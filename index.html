@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Text Renderer</title>
+		<style>
+			* {
+				box-sizing: border-box;
+				font-size:16px;
+			}
+
+			.text-container{
+				opacity:0;
+				outline:1px solid limegreen;
+				display:flex;
+				align-items: center;
+				justify-content: center;
+				text-align: center;
+			}
+
+			.js-text {
+				white-space: nowrap;							
+			}
+
+			.is--visible{
+				opacity:1;
+			}
+
+		</style>
+	</head>
+	<body>
+		<form action="" class="js-form" >
+			<ol class="js-input-list">
+				<li><label>Text<input type="text" id="text"></label></li>
+				<li><label>Width<input id="width" type="number"></label></li>
+				<li><label>Height<input id="height" type="number"></label></li>
+				<li><select name="" id="font">
+					<option value="Verdana">Verdana</option>
+					<option value="Arial">Arial</option>
+					<option value="Times New Roman">Times New Roman</option>
+					</select></li>
+				<li><button type="submit">Render text</button></li>
+			</ol>
+		</form>
+		<div class="js-text-container text-container">
+
+			<span class="js-text"></span>
+
+		</div>
+		<script>
+			(function(){
+				var textOptions = function(width,height,text,font){
+					this.width = parseInt(width,10);
+					this.height = parseInt(height,10);
+					this.text = text;
+					this.font = font;
+				}
+
+				var form = document.querySelector('.js-form'),
+						textContainer = document.querySelector('.js-text-container'),
+						textSpan = document.querySelector('.js-text');
+
+
+				function getValues(){
+					var options = {},
+							text = document.getElementById('text').value,
+							width= document.getElementById('width').value,
+							height = document.getElementById('height').value,
+							font = document.getElementById('font').value;
+
+					options.text = text;
+					options.width = width;
+					options.height = height;
+					options.font = font;
+
+					var box  = new textOptions(options.width,options.height,options.text,options.font);
+					return box;
+				}
+
+
+				function checkSizing(){
+					var resize = {
+						down: false,
+						up: false
+					};
+
+					switch(true){
+						case textSpan.offsetWidth  <  getValues().width && textSpan.offsetHeight  < getValues().height:
+							resize.up = true;
+							break;
+						case textSpan.offsetWidth  > textContainer.offsetWidth  || textSpan.offsetHeight  > textContainer.offsetHeight:
+							resize.down = true;
+							break;
+						default:
+							resize = {
+								down: false,
+								up: false
+							}
+							break;
+					}
+					return resize;
+				}
+
+
+				function renderBox(e){
+					e.preventDefault();
+					if(textSpan.hasAttribute('style') && textContainer.hasAttribute('style')) {
+						textSpan.removeAttribute('style');
+						textContainer.removeAttribute('style');
+					}
+
+					var box = getValues(),
+							boxStyle = 'width:' + box.width + 'px; height:' + box.height + 'px; font-family:' + box.font +';';
+
+					textContainer.setAttribute('style',boxStyle);
+					textSpan.textContent = box.text;
+
+					if(checkSizing().up || checkSizing().down){
+						adjustFontSize(textSpan);
+					}
+
+					if(!textContainer.classList.add('is--visible')){
+						textContainer.classList.add('is--visible');
+					}
+				}
+
+				function adjustFontSize(textSpan){
+					while(checkSizing().down) {
+						var fontSize = parseInt(window.getComputedStyle(textSpan,null).fontSize);
+						textSpan.style.fontSize = fontSize-1 + 'px';
+						checkSizing().down;
+					}
+
+					while(checkSizing().up) {
+						var fontSize = parseInt(window.getComputedStyle(textSpan,null).fontSize);
+						textSpan.style.fontSize = fontSize+1 + 'px';
+						checkSizing().up;
+					}
+				}
+
+
+				form.addEventListener('submit',renderBox, false);
+
+
+
+			})();
+		</script>
+	</body>
+</html>
